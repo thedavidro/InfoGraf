@@ -1,21 +1,21 @@
-//GLEW
+#pragma once
+
 #define GLEW_STATIC
 #include <GL\glew.h>
-//GLFW
 #include <GLFW\glfw3.h>
 
 #include <string>
-#include <fstream>
-#include <sstream>
 #include <iostream>
+#include <sstream>
+#include <fstream>
 
-#pragma once
 class Shader
 {
 public:
 	GLuint Program;
-	Shader(const GLchar*, const GLchar*);
-	
-	void USE();
+
+	Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
+	~Shader();
+	void Use();
 };
 

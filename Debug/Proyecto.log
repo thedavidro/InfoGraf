@@ -1,9 +1,7 @@
 ﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(936,5): warning MSB8027: Two or more files with the name of shader.cpp will produce outputs to the same location. This can lead to an incorrect build result.  The files involved are Common\shader.cpp, Shader.cpp.
-  main.cpp
-c:\users\davidro\desktop\practica1\src\main.cpp(50): warning C4305: 'argumento': truncamiento de 'double' a 'GLclampf'
 Debug\Shader.obj : warning LNK4042: objeto especificado más de una vez; omitidos los sobrantes
 LINK : warning LNK4098: la biblioteca predeterminada'LIBCMT' entra en conflicto con otras bibliotecas; use la biblioteca /NODEFAULTLIB:biblioteca
 LINK : warning LNK4098: la biblioteca predeterminada'MSVCRT' entra en conflicto con otras bibliotecas; use la biblioteca /NODEFAULTLIB:biblioteca
-glew32s.lib(glew.obj) : warning LNK4099: no se encontró PDB 'vc120.pdb' con 'glew32s.lib(glew.obj)' o en 'C:\Users\Davidro\Desktop\Practica1\Debug\vc120.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
-  Proyecto.vcxproj -> C:\Users\Davidro\Desktop\Practica1\Debug\Practica1.exe
-  Proyecto.vcxproj -> C:\Users\Davidro\Desktop\Practica1\Debug\Practica1.pdb (Full PDB)
+main.obj : error LNK2019: símbolo externo "public: __thiscall Shader::~Shader(void)" (??1Shader@@QAE@XZ) sin resolver al que se hace referencia en la función _main
+main.obj : error LNK2019: símbolo externo "public: void __thiscall Shader::Use(void)" (?Use@Shader@@QAEXXZ) sin resolver al que se hace referencia en la función _main
+C:\Users\Davidro\Documents\GitHub\InfoGraf\Debug\Practica1.exe : fatal error LNK1120: 2 externos sin resolver
