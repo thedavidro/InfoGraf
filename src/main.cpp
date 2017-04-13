@@ -21,6 +21,7 @@ bool WIDEFRAME = false;
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 //void DrawVAO(GLuint VAO);
 GLfloat mixValue = 0.6f;
+float rotation = 0;
 
 int main() {
 	//initGLFW
@@ -168,7 +169,6 @@ int main() {
 	vec3 vector(3);
 	mat2 matriz;
 
-
 	//bucle de dibujado
 	while (!glfwWindowShouldClose(window))
 	{
@@ -189,6 +189,16 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, texture2);
 		glUniform1i(glGetUniformLocation(myShader.Program, "ourTexture2"), 1);
 		glUniform1f(glGetUniformLocation(myShader.Program, "mixValue"), mixValue);
+
+		// EJERCICIO 3
+		mat4x4 finalTranslationMatrix;
+		finalTranslationMatrix = translate(finalTranslationMatrix, vec3(0.5, 0.5, 0.0));
+		finalTranslationMatrix = rotate(finalTranslationMatrix, radians(rotation), vec3(0.0, 0.0, 1.0)); //rot in Z
+		finalTranslationMatrix = scale(finalTranslationMatrix, vec3(0.5, 0.5, 0.0));
+		
+
+		GLuint matrixID = glGetUniformLocation(myShader.Program, "matrix");
+		glUniformMatrix4fv(matrixID, 1, GL_FALSE, value_ptr(finalTranslationMatrix));
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -226,21 +236,21 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		WIDEFRAME = false;
 
 	//EJERCICIO 2
-	if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
+	if (key == GLFW_KEY_UP && action == GLFW_REPEAT) {
 		mixValue += 0.1f;
 		if (mixValue >= 1.0f)
 			mixValue = 1.0f;
 	}
-	if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
+	if (key == GLFW_KEY_DOWN && action == GLFW_REPEAT) {
 		mixValue -= 0.1f;
 		if (mixValue <= 0.0f)
 			mixValue = 0.0f;
 	}
-	if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-		//trans = rotate(trans,90.0f,vec3(1.0,0.0,0.0));
+	if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT) {
+		rotation -= 1;
 	}
-	if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-		//trans = rotate(trans,-90.0f,vec3(1.0,0.0,0.0));
+	if (key == GLFW_KEY_LEFT && action == GLFW_REPEAT) {
+		rotation += 1;
 	}
 	//TYPE = GL_FILL;
 	//TODO, comprobar que la tecla pulsada es escape para cerrar la aplicación y la tecla w para cambiar a modo widwframe
