@@ -37,7 +37,6 @@ int main() {
 	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
 	//create a window
-//TODO
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Practica VAO.", nullptr, nullptr);
 	if (!window) {
 		cout << "Error al crear ventana." << endl;
@@ -45,7 +44,6 @@ int main() {
 		exit(EXIT_FAILURE);
 	}
 	//set GLEW and inicializate
-//TODO
 	glfwMakeContextCurrent(window);
 
 	glewExperimental = GL_TRUE;
@@ -56,7 +54,6 @@ int main() {
 		return NULL;
 	}
 	//set function when callback
-//TODO
 	int screenWidth, screenHeight;
 	glfwGetFramebufferSize(window, &screenWidth, &screenHeight);
 	glfwSetKeyCallback(window, key_callback);
@@ -78,6 +75,63 @@ int main() {
 		0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom Right
 		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
 		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left 
+	};
+
+	GLfloat vertices[] = {
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	};
+
+	vec3 cubePositions[] = {
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 
 	GLuint VBO, VAO, EBO;
@@ -104,6 +158,8 @@ int main() {
 	glEnableVertexAttribArray(2);
 
 	glBindVertexArray(0);
+
+	glEnable(GL_DEPTH_TEST); // Z-buffer
 
 
 	// EJERCICIO 1
@@ -170,17 +226,20 @@ int main() {
 	mat2 matriz;
 
 	// EJERCICIO 4
-
+	mat4 model;
+	mat4 view;
+	mat4 projection;
 
 	//bucle de dibujado
 	while (!glfwWindowShouldClose(window))
 	{
-		glClear(GL_COLOR_BUFFER_BIT);
-		glClearColor(1, 1, 1, 1);
+		glClearColor(0.2f, 0.2f, 0.8f, 1.f);
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glfwPollEvents();
 
 		//EJERCICIO 1
 		//glBindTexture(GL_TEXTURE_2D, texture);
-
 
 		myShader.Use();
 
@@ -194,26 +253,47 @@ int main() {
 		glUniform1f(glGetUniformLocation(myShader.Program, "mixValue"), mixValue);
 
 		// EJERCICIO 3
+		/*
 		mat4x4 finalTranslationMatrix;
 		finalTranslationMatrix = translate(finalTranslationMatrix, vec3(0.5, 0.5, 0.0));
 		finalTranslationMatrix = rotate(finalTranslationMatrix, radians(rotation), vec3(0.0, 0.0, 1.0)); //rot in Z
 		finalTranslationMatrix = scale(finalTranslationMatrix, vec3(0.5, 0.5, 0.0));
-		
-
 		GLuint matrixID = glGetUniformLocation(myShader.Program, "matrix");
 		glUniformMatrix4fv(matrixID, 1, GL_FALSE, value_ptr(finalTranslationMatrix));
+		*/
+
+		// EJERCICIO 4
+		view = translate(view, vec3(0.0f, 0.0f, -3.0f));
+		projection = perspective(45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+
+		GLint modelLoc = glGetUniformLocation(myShader.Program, "model");
+		GLint viewLoc = glGetUniformLocation(myShader.Program, "view");
+		GLint projLoc = glGetUniformLocation(myShader.Program, "projection");
+
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, value_ptr(projection));
+		
+		
+		// EJERCICIO 5
+		
 
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		for (GLuint i = 0; i < 10; i++)
+		{
+			// Calculate the model matrix for each object and pass it to shader before drawing
+			mat4 model;
+			model = translate(model, cubePositions[i]);
+			GLfloat angle = 20.0f * i;
+			model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5f));
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 		glBindVertexArray(0);
-		//pintar con lineas
-		//DrawVAO(VAO, myShader, texture);
 		
 		//intercambia el framebuffer
 		glfwSwapBuffers(window);
-
-		//comprueba que algun disparador se halla activado
-		glfwPollEvents();
 	}
 
 	glDeleteVertexArrays(1, &VAO);
