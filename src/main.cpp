@@ -4,7 +4,7 @@
 //GLFW
 #include <GLFW\glfw3.h>
 #include <iostream>
-#include "..\Shader.h"
+#include "Shader.h"
 #include <SOIL.h>
 
 #include <glm.hpp>
@@ -169,6 +169,9 @@ int main() {
 	vec3 vector(3);
 	mat2 matriz;
 
+	// EJERCICIO 4
+
+
 	//bucle de dibujado
 	while (!glfwWindowShouldClose(window))
 	{
@@ -246,6 +249,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (mixValue <= 0.0f)
 			mixValue = 0.0f;
 	}
+
+	// EJERCICIO 3
 	if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT) {
 		rotation -= 1;
 	}
