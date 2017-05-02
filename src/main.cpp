@@ -13,7 +13,6 @@
 
 
 using namespace std;
-using namespace glm;
 
 const GLint WIDTH = 800, HEIGHT = 600;
 bool WIDEFRAME = false;
@@ -21,7 +20,24 @@ bool WIDEFRAME = false;
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 //void DrawVAO(GLuint VAO);
 GLfloat mixValue = 0.6f;
+bool firstMouse = true;
 float rotation = 0;
+GLfloat yaw = -90.0f;
+GLfloat pitch = 0.0f;
+GLfloat lastX = WIDTH / 2.0;
+GLfloat lastY = HEIGHT / 2.0;
+
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+GLfloat deltaTime = 0.f;
+GLfloat lastFrame = 0.f;
+
+
+//funciones
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+
 
 int main() {
 	//initGLFW
@@ -53,6 +69,8 @@ int main() {
 		glfwTerminate();
 		return NULL;
 	}
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	//set function when callback
 	int screenWidth, screenHeight;
 	glfwGetFramebufferSize(window, &screenWidth, &screenHeight);
@@ -121,7 +139,7 @@ int main() {
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
-	vec3 cubePositions[] = {
+	glm::vec3 cubePositions[] = {
 		glm::vec3(0.0f,  0.0f,  0.0f),
 		glm::vec3(2.0f,  5.0f, -15.0f),
 		glm::vec3(-1.5f, -2.2f, -2.5f),
@@ -185,9 +203,8 @@ int main() {
 	// EJERCICIO 2
 	GLuint texture1;
 	GLuint texture2;
-	// ====================
-	// Texture 1
-	// ====================
+
+	// Textura 1
 	glGenTextures(1, &texture1);
 	glBindTexture(GL_TEXTURE_2D, texture1); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
 											// Set our texture parameters
@@ -203,9 +220,8 @@ int main() {
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
 	glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
-	// ===================
-	// Texture 2
-	// ===================
+
+	// Textura 2
 	glGenTextures(1, &texture2);
 	glBindTexture(GL_TEXTURE_2D, texture2);
 	// Set our texture parameters
@@ -222,17 +238,31 @@ int main() {
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// EJERCICIO 3
-	vec3 vector(3);
-	mat2 matriz;
+	glm::vec3 vector(3);
+	glm::mat2 matriz;
 
-	// EJERCICIO 4
-	mat4 model;
-	mat4 view;
-	mat4 projection;
+	// EJERCICIO 4 - VISTA
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 projection;
 
-	//bucle de dibujado
+	// EJERCICIO 5 - CÁMARA ::: posicion,direccion,derecha,arriba(3 ejes)
+	glm::vec3 cameraPos = { 0.0f,0.0f,3.0f };
+	// Direccion de la cámara
+	glm::vec3 cameraTarget = { 0.0f,0.0f,0.0f };
+	glm::vec3 cameraDirection; // normalize (cPos - cTarg)
+	glm::vec3 vectorUp = { 0.0f,1.0f,0.0f };
+	glm::vec3 cameraRightAxis;
+	glm::vec3 cameraUpAxis;
+
+	// ==================================================================================================================================
 	while (!glfwWindowShouldClose(window))
 	{
+
+		GLfloat currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		glClearColor(0.2f, 0.2f, 0.8f, 1.f);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -262,9 +292,15 @@ int main() {
 		glUniformMatrix4fv(matrixID, 1, GL_FALSE, value_ptr(finalTranslationMatrix));
 		*/
 
-		// EJERCICIO 4
-		view = translate(view, vec3(0.0f, 0.0f, -3.0f));
-		projection = perspective(45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+		// EJERCICIO 4+5
+
+		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
+		//cameraDirection = glm::normalize(cameraPos - cameraTarget);
+		//cameraRightAxis = glm::normalize(glm::cross(vectorUp, cameraDirection)); //a partir del vectorUp (world space) aplicado a la direccion de la camara sacamos el vectorX
+		//cameraUpAxis = glm::cross(cameraDirection, cameraRightAxis); //lo mismo pero entre Right y direction = up
+
+		projection = glm::perspective(45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
 
 		GLint modelLoc = glGetUniformLocation(myShader.Program, "model");
 		GLint viewLoc = glGetUniformLocation(myShader.Program, "view");
@@ -274,16 +310,17 @@ int main() {
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, value_ptr(projection));
 		
 		
-		// EJERCICIO 5
 		
+		
+
 
 		glBindVertexArray(VAO);
 
 		for (GLuint i = 0; i < 10; i++)
 		{
 			// Calculate the model matrix for each object and pass it to shader before drawing
-			mat4 model;
-			model = translate(model, cubePositions[i]);
+			glm::mat4 model;
+			model = glm::translate(model, cubePositions[i]);
 			GLfloat angle = 20.0f * i;
 			model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5f));
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -312,11 +349,24 @@ int main() {
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
-	if (!WIDEFRAME && key == GLFW_KEY_W && action == GLFW_PRESS)
-		WIDEFRAME = true;
-	//WIDEFRAME = !WIDEFRAME;
-	else if (WIDEFRAME && key == GLFW_KEY_W && action == GLFW_PRESS)
-		WIDEFRAME = false;
+
+	GLfloat cameraSpeed = 5.0f * deltaTime;
+
+	//if (!WIDEFRAME && key == GLFW_KEY_W && action == GLFW_PRESS)
+	//	WIDEFRAME = true;
+	////WIDEFRAME = !WIDEFRAME;
+	//else if (WIDEFRAME && key == GLFW_KEY_W && action == GLFW_PRESS)
+	//	WIDEFRAME = false;
+
+	if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+		cameraPos += cameraSpeed * cameraFront;
+	} else if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	} else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+		cameraPos -= cameraSpeed * cameraFront;
+	} else if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	}
 
 	//EJERCICIO 2
 	if (key == GLFW_KEY_UP && action == GLFW_REPEAT) {
@@ -339,6 +389,39 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 	//TYPE = GL_FILL;
 	//TODO, comprobar que la tecla pulsada es escape para cerrar la aplicación y la tecla w para cambiar a modo widwframe
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	GLfloat xoffset = xpos - lastX;
+	GLfloat yoffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
+
+	GLfloat sensitivity = 0.05;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	yaw += xoffset;
+	pitch += yoffset;
+
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraFront = glm::normalize(front);
 }
 
 //void DrawVAO(GLuint VAO, Shader myShader, GLuint texture) {
