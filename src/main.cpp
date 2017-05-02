@@ -13,7 +13,6 @@
 
 
 using namespace std;
-using namespace glm;
 
 const GLint WIDTH = 800, HEIGHT = 600;
 bool WIDEFRAME = false;
@@ -23,6 +22,29 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 GLfloat mixValue = 0.6f;
 float rotationX = 0.0f;
 float rotationY = 0.0f;
+
+enum KeyPressed {
+	keyW, keyA, keyS, keyD
+};
+
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+GLfloat yaw = -90.0f;
+GLfloat pitch = 0.0f;
+GLfloat lastX = WIDTH / 2.0;
+GLfloat lastY = HEIGHT / 2.0;
+GLfloat fov = 45.0f;
+bool firstTime = true;
+
+GLfloat deltaTime = 0.0f;
+GLfloat lastFrame = 0.0f;
+
+//funciones
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void do_movement(KeyPressed key);
 
 int main() {
 	//initGLFW
@@ -58,6 +80,8 @@ int main() {
 	int screenWidth, screenHeight;
 	glfwGetFramebufferSize(window, &screenWidth, &screenHeight);
 	glfwSetKeyCallback(window, key_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 	//set windows and viewport
 
 	//GLuint programID = LoadShaders("./src/SimpleVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
@@ -122,7 +146,7 @@ int main() {
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
-	vec3 CubesPositionBuffer[] = {
+	glm::vec3 CubesPositionBuffer[] = {
 		glm::vec3(0.0f,  0.0f,  0.0f),
 		glm::vec3(2.0f,  5.0f, -15.0f),
 		glm::vec3(-1.5f, -2.2f, -2.5f),
@@ -186,9 +210,7 @@ int main() {
 							 // EJERCICIO 2
 	GLuint texture1;
 	GLuint texture2;
-	// ====================
-	// Texture 1
-	// ====================
+	// Textura 1
 	glGenTextures(1, &texture1);
 	glBindTexture(GL_TEXTURE_2D, texture1); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
 											// Set our texture parameters
@@ -204,9 +226,7 @@ int main() {
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
 	glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
-									 // ===================
-									 // Texture 2
-									 // ===================
+	// Textura 2
 	glGenTextures(1, &texture2);
 	glBindTexture(GL_TEXTURE_2D, texture2);
 	// Set our texture parameters
@@ -223,8 +243,8 @@ int main() {
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// EJERCICIO 3
-	vec3 vector(3);
-	mat2 matriz;
+	glm::vec3 vector(3);
+	glm::mat2 matriz;
 
 	// EJERCICIO 4
 
@@ -232,10 +252,16 @@ int main() {
 	//bucle de dibujado
 	while (!glfwWindowShouldClose(window))
 	{
+
+		GLfloat currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		glClearColor(0.2f, 0.2f, 0.8f, 1.f);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glfwPollEvents();
+
+		glfwPollEvents(); //llama a do_movement
 
 		//EJERCICIO 1
 		//glBindTexture(GL_TEXTURE_2D, texture);
@@ -262,11 +288,10 @@ int main() {
 		*/
 
 		// EJERCICIO 4
-		mat4 model;
-		mat4 view;
-		mat4 projection;
-		view = translate(view, vec3(0.0f, 0.0f, -3.0f));
-		projection = perspective(glm::radians(-60.0f), (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
+		glm::mat4 view;
+		glm::mat4 projection;
+		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+		projection = glm::perspective(fov, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 
 		GLint modelLoc = glGetUniformLocation(myShader.Program, "model");
 		GLint viewLoc = glGetUniformLocation(myShader.Program, "view");
@@ -275,17 +300,13 @@ int main() {
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, value_ptr(projection));
 
-
-		// EJERCICIO 5
-
-
 		glBindVertexArray(VAO);
 
 		for (GLuint i = 0; i < 10; i++)
 		{
 			// Calculate the model matrix for each object and pass it to shader before drawing
-			mat4 model;
-			model = translate(model, CubesPositionBuffer[i]);
+			glm::mat4 model;
+			model = glm::translate(model, CubesPositionBuffer[i]);
 			GLfloat angle = 20.0f * i;
 			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 			model = glm::rotate(model, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -313,14 +334,86 @@ int main() {
 	exit(EXIT_SUCCESS);
 }
 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (firstTime)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstTime = false;
+	}
+
+	GLfloat xoffset = xpos - lastX;
+	GLfloat yoffset = lastY - ypos; // Reversed since y-coordinates go from bottom to left
+	lastX = xpos;
+	lastY = ypos;
+
+	GLfloat sensitivity = 0.05;	// Change this value to your liking
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	yaw += xoffset;
+	pitch += yoffset;
+
+	// Make sure that when pitch is out of bounds, screen doesn't get flipped
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraFront = glm::normalize(front);
+}
+
+void do_movement(KeyPressed key) {
+	GLfloat cameraSpeed = 5.0f * deltaTime;
+	switch (key) {
+	case keyW:
+		cameraPos += cameraSpeed * cameraFront;
+		break;
+
+	case keyA:
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		break;
+
+	case keyS:
+		cameraPos -= cameraSpeed * cameraFront;
+		break;
+
+	case keyD:
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		break;
+	}
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	if (fov >= 1.0f && fov <= 45.0f)
+		fov -= yoffset;
+	if (fov <= 1.0f)
+		fov = 1.0f;
+	if (fov >= 45.0f)
+		fov = 45.0f;
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
-	if (!WIDEFRAME && key == GLFW_KEY_W && action == GLFW_PRESS)
-		WIDEFRAME = true;
-	//WIDEFRAME = !WIDEFRAME;
-	else if (WIDEFRAME && key == GLFW_KEY_W && action == GLFW_PRESS)
-		WIDEFRAME = false;
+
+	if (key == GLFW_KEY_W && (action == GLFW_REPEAT || action == GLFW_PRESS))
+		do_movement(keyW);
+
+	if (key == GLFW_KEY_A && (action == GLFW_REPEAT || action == GLFW_PRESS))
+		do_movement(keyA);
+
+	if (key == GLFW_KEY_S && (action == GLFW_REPEAT || action == GLFW_PRESS))
+		do_movement(keyS);
+
+	if (key == GLFW_KEY_D && (action == GLFW_REPEAT || action == GLFW_PRESS))
+		do_movement(keyD);
 
 	//EJERCICIO 2
 	if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
@@ -349,8 +442,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_LEFT && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		rotationY += 0.5f;
 	}
+
+
+
 	//TYPE = GL_FILL;
-	//TODO, comprobar que la tecla pulsada es escape para cerrar la aplicación y la tecla w para cambiar a modo widwframe
 }
 
 //void DrawVAO(GLuint VAO, Shader myShader, GLuint texture) {
