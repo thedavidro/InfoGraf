@@ -4,15 +4,13 @@
 //GLFW
 #include <GLFW\glfw3.h>
 #include <iostream>
-#include "Shader.h"
+#include "Model.h" //model tiene el Mesh.h y Mesh.h tiene el Shader.h
 #include <SOIL.h>
 
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 
-
-using namespace std;
 
 const GLint WIDTH = 800, HEIGHT = 600;
 bool WIDEFRAME = false;
@@ -39,6 +37,8 @@ bool firstTime = true;
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
+
+int choosenObj = 1;
 
 //funciones
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
@@ -186,28 +186,7 @@ int main() {
 
 	glEnable(GL_DEPTH_TEST); // Z-buffer
 
-
-							 // EJERCICIO 1
-							 /*GLuint texture;
-							 glGenTextures(1, &texture);
-							 glBindTexture(GL_TEXTURE_2D, texture); // All upcoming GL_TEXTURE_2D operations now have effect on this texture object
-							 // Set the texture wrapping parameters
-							 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
-							 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-							 // Set texture filtering parameters
-							 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-							 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-							 // Load image, create texture and generate mipmaps
-							 int width, height;
-							 unsigned char* image = SOIL_load_image("container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
-							 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-							 glGenerateMipmap(GL_TEXTURE_2D);
-							 SOIL_free_image_data(image);
-							 glBindTexture(GL_TEXTURE_2D, 0);*/
-
-
-
-							 // EJERCICIO 2
+	// EJERCICIO 2
 	GLuint texture1;
 	GLuint texture2;
 	// Textura 1
@@ -246,13 +225,15 @@ int main() {
 	glm::vec3 vector(3);
 	glm::mat2 matriz;
 
-	// EJERCICIO 4
+	// Objectos
+	Model model1("./models/spider.obj");
+	Model model2("./models/regr01.obj");
+	Model model3("./models/concave_polygon.obj");
 
 
 	//bucle de dibujado
 	while (!glfwWindowShouldClose(window))
 	{
-
 		GLfloat currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -318,6 +299,24 @@ int main() {
 		glBindVertexArray(0);
 
 		//intercambia el framebuffer
+
+		
+		switch (choosenObj) {
+		case 1:
+			model1.Draw(myShader, GL_STATIC_DRAW);
+			break;
+
+		case 2:
+			model2.Draw(myShader, GL_STATIC_DRAW);
+			break;
+
+		case 3:
+			model3.Draw(myShader, GL_STATIC_DRAW);
+			break;
+		}
+		
+
+
 		glfwSwapBuffers(window);
 	}
 
@@ -416,13 +415,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		do_movement(keyD);
 
 	//EJERCICIO 2
-	if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
+	if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
 		/*mixValue += 0.1f;
 		if (mixValue >= 1.0f)
 		mixValue = 1.0f;*/
 		mixValue = 0;
 	}
-	if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
+	if (key == GLFW_KEY_5 && action == GLFW_PRESS) {
 		/*mixValue -= 0.1f;
 		if (mixValue <= 0.0f)
 		mixValue = 0.0f;*/
@@ -443,11 +442,17 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		rotationY += 0.5f;
 	}
 
-
-
-	//TYPE = GL_FILL;
+	// Swap de objetos
+	if (key == GLFW_KEY_1 && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		choosenObj = 1;
+	}
+	if (key == GLFW_KEY_2 && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		choosenObj = 2;
+	}
+	if (key == GLFW_KEY_3 && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		choosenObj = 3;
+	}
 }
-
 //void DrawVAO(GLuint VAO, Shader myShader, GLuint texture) {
 ////	glBindVertexArray(VAO);
 //	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
