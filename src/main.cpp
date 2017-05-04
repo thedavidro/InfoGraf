@@ -5,6 +5,7 @@
 #include <GLFW\glfw3.h>
 #include <iostream>
 #include "Model.h" //model tiene el Mesh.h y Mesh.h tiene el Shader.h
+#include "Object.h"
 #include <SOIL.h>
 
 #include <glm.hpp>
@@ -40,6 +41,16 @@ GLfloat lastFrame = 0.0f;
 
 int choosenObj = 1;
 
+glm::vec3 cube1pos = { 0,0,0 };
+GLfloat cube1offsetX;
+GLfloat cube1offsetY;
+GLfloat cube1offsetZ;
+
+glm::vec3 cube2pos = { 0,0,0 };
+GLfloat cube2offsetX;
+GLfloat cube2offsetY;
+GLfloat cube2offsetZ;
+
 //funciones
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -60,7 +71,7 @@ int main() {
 	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
 	//create a window
-	window = glfwCreateWindow(WIDTH, HEIGHT, "Practica VAO.", nullptr, nullptr);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "InfoGraf", nullptr, nullptr);
 	if (!window) {
 		cout << "Error al crear ventana." << endl;
 		glfwTerminate();
@@ -159,6 +170,9 @@ int main() {
 		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 
+	Shader lightingShader("path/to/shaders/lighting.vs", "path/to/shaders/lighting.frag");
+	Shader lampShader("path/to/shaders/lamp.vs", "path/to/shaders/lamp.frag");
+
 	GLuint VBO, VAO, EBO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -186,49 +200,13 @@ int main() {
 
 	glEnable(GL_DEPTH_TEST); // Z-buffer
 
-	// EJERCICIO 2
-	GLuint texture1;
-	GLuint texture2;
-	// Textura 1
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
-											// Set our texture parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	// Set texture filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// Load, create texture and generate mipmaps
-	int width, height;
-	unsigned char* image = SOIL_load_image("./src/texture.png", &width, &height, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
-	glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
-	// Textura 2
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-	// Set our texture parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	// Set texture filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// Load, create texture and generate mipmaps
-	image = SOIL_load_image("./src/sloth.png", &width, &height, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// EJERCICIO 3
 	glm::vec3 vector(3);
 	glm::mat2 matriz;
 
-	// Objectos
-	Model model1("./models/spider.obj");
-	Model model2("./models/regr01.obj");
-	Model model3("./models/concave_polygon.obj");
+	Object cubo1(glm::vec3 = { 1,1,1 }, glm::vec3 = { 0.3,0.3,0.3 }, cube1pos, 0);
+
+	//Object cube1(glm::vec3(1.f, 1.f, 1.f), (0.3f, 0.3f, 0.3f), (0.0f, 0.0f, 0.0f), 0);
+
 
 
 	//bucle de dibujado
@@ -238,50 +216,34 @@ int main() {
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		glClearColor(0.2f, 0.2f, 0.8f, 1.f);
+		glClearColor(0.f, 0.f, 0.f, 1.f);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glfwPollEvents(); //llama a do_movement
 
-		//EJERCICIO 1
-		//glBindTexture(GL_TEXTURE_2D, texture);
-
 		myShader.Use();
 
-		//EJERCICIO 2
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-		glUniform1i(glGetUniformLocation(myShader.Program, "ourTexture1"), 0);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
-		glUniform1i(glGetUniformLocation(myShader.Program, "ourTexture2"), 1);
-		glUniform1f(glGetUniformLocation(myShader.Program, "mixValue"), mixValue);
-
-		// EJERCICIO 3
-		/*
-		mat4x4 finalTranslationMatrix;
-		finalTranslationMatrix = translate(finalTranslationMatrix, vec3(0.5, 0.5, 0.0));
-		finalTranslationMatrix = rotate(finalTranslationMatrix, radians(rotation), vec3(0.0, 0.0, 1.0)); //rot in Z
-		finalTranslationMatrix = scale(finalTranslationMatrix, vec3(0.5, 0.5, 0.0));
-		GLuint matrixID = glGetUniformLocation(myShader.Program, "matrix");
-		glUniformMatrix4fv(matrixID, 1, GL_FALSE, value_ptr(finalTranslationMatrix));
-		*/
-
-		// EJERCICIO 4
 		glm::mat4 view;
 		glm::mat4 projection;
+
+		glm::vec3 movementVector = glm::vec3(cube1pos.x + cube1offsetX, cube1offsetY + cube1offsetY, cube1pos.z + cube1offsetZ);
+		glm::vec3 rotationVector = glm::vec3(rotationX, rotationY, 0.0f);
+
+
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		projection = glm::perspective(fov, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
+
+		cube1.Move(movementVector);
+		cube1.Rotate(rotationVector);
+		model = cubeA.GetModelMatrix();
 
 		GLint modelLoc = glGetUniformLocation(myShader.Program, "model");
 		GLint viewLoc = glGetUniformLocation(myShader.Program, "view");
 		GLint projLoc = glGetUniformLocation(myShader.Program, "projection");
 
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, value_ptr(projection));
-
-		glBindVertexArray(VAO);
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 		for (GLuint i = 0; i < 10; i++)
 		{
@@ -296,24 +258,9 @@ int main() {
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
-		glBindVertexArray(0);
 
 		//intercambia el framebuffer
 
-		
-		switch (choosenObj) {
-		case 1:
-			model1.Draw(myShader, GL_STATIC_DRAW);
-			break;
-
-		case 2:
-			model2.Draw(myShader, GL_STATIC_DRAW);
-			break;
-
-		case 3:
-			model3.Draw(myShader, GL_STATIC_DRAW);
-			break;
-		}
 		
 
 
@@ -453,18 +400,3 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		choosenObj = 3;
 	}
 }
-//void DrawVAO(GLuint VAO, Shader myShader, GLuint texture) {
-////	glBindVertexArray(VAO);
-//	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-//	/*if (WIDEFRAME)
-//		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); //GL_LINE -->lineas
-//	else
-//		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-//*/
-//	glBindTexture(GL_TEXTURE_2D, texture);
-//	myShader.Use();
-//	glBindVertexArray(VAO);
-//	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-//	glBindVertexArray(0);
-//
-//}
