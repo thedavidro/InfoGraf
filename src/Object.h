@@ -1,8 +1,8 @@
 #pragma once
-#include <GL\glew.h>
-#include<glm.hpp>
-#include <gtc\matrix_transform.hpp>
+
 #include "Shader.h"
+#include <gtc\matrix_transform.hpp>
+
 
 class Object {
 
